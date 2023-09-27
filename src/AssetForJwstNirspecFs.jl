@@ -1,8 +1,10 @@
 
-module AssetForJwstNirspecFs.jl
+module AssetForJwstNirspecFs
 
 export 
-
+    extract_spectrum, 
+    load_data, 
+    geometric_calibration
 
 using InterpolationKernels
 using InverseProblem
@@ -21,4 +23,4 @@ include("geometric_calibration.jl")
 include("data_loader.jl")
 include("optim_tools.jl")
 
-end # module ASSET
+end # module AssetForJwstNirspecFs
