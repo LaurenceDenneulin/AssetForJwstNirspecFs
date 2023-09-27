@@ -1,3 +1,5 @@
+
+
 """
     data, wgt, bpm, lambda, pos =  load_data(filename)
     
@@ -13,7 +15,8 @@
     
     -'pos' is the position of the object in the slit (-1.5 being the top et 1.5 the bottom).
 
-"""function load_data(filename::AbstractString)
+"""
+function load_data(filename::AbstractString)
     clear_vect=[]
     pos_vect=[]
     FitsIO(filename, "r") do io
