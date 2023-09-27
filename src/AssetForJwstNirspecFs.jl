@@ -6,6 +6,7 @@ export
     load_data, 
     geometric_calibration
 
+using ASSET
 using InterpolationKernels
 using InverseProblem
 using DelimitedFiles

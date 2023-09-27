@@ -78,7 +78,7 @@ function load_data(filename_beg::AbstractString,
     m,n = size(d)
     data=zeros(m,n,nfiles)
     wgt=zeros(m,n,nfiles)
-    bpm=zeros(m,n,nfiles)
+    bpm_map=zeros(m,n,nfiles)
     lambda=zeros(m,n,nfiles)
     rho=zeros(m,n,nfiles)
     pos=zeros(nfiles)
@@ -86,10 +86,10 @@ function load_data(filename_beg::AbstractString,
          d, w, bpm, λ, p = load_data(filename_beg*"$i"*filename_end)
          data[:,:,i] .=d
          wgt[:,:,i] .= w 
-         bpm[:,:,i] .=bpm 
+         bpm_map[:,:,i] .=bpm 
          lambda[:,:,i] .= λ 
          pos[i] = p       
-         rho[:,:,i] .= geometric_calibration(data[:,:,i], bpm[:,:,i], pos[i]; order=order, plot_geo=plot_geo)[1]
+         rho[:,:,i] .= geometric_calibration(data[:,:,i], bpm_map[:,:,i], pos[i]; order=order)[1]
     end
     
     if sky_sub
