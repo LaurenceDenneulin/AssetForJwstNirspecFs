@@ -19,9 +19,10 @@ using OptimPackNextGen
 import OptimPackNextGen.Powell.Bobyqa
 import OptimPackNextGen.Brent
 
-include("spectrum_extraction.jl")
-include("geometric_calibration.jl")
+
 include("data_loader.jl")
 include("optim_tools.jl")
+include("geometric_calibration.jl")
+include("spectrum_extraction.jl")
 
 end # module AssetForJwstNirspecFs
