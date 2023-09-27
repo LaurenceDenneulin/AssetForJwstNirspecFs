@@ -12,7 +12,8 @@
     -'hpb' is the hyperparameter for the background regularization,
     
 
-"""function extract_spectrum(filename_beg::AbstractString,
+"""
+function extract_spectrum(filename_beg::AbstractString,
                              filename_end::AbstractString, 
                              nfiles::Integer, 
                              hpz::AbstractFloat, 

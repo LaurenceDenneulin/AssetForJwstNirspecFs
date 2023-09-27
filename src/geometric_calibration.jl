@@ -2,7 +2,8 @@
 
 """
 
-"""function geometric_calibration(d, bpm, pos; order=2)
+"""
+function geometric_calibration(d, bpm, pos; order=2)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
     if order == 0
@@ -25,7 +26,8 @@ end
 
 """
 
-"""function extract_λ_val(ρ_map, λ_map, ρ0)
+"""
+function extract_λ_val(ρ_map, λ_map, ρ0)
     @assert size(ρ_map)==size(λ_map)
     m,n=size(ρ_map)
     λ = zeros(n)
@@ -40,7 +42,8 @@ end
 
 """
 
-"""function slit2cam(d::AbstractArray{T,2}, pos::T) where {T<:AbstractFloat}
+"""
+function slit2cam(d::AbstractArray{T,2}, pos::T) where {T<:AbstractFloat}
     left_corner = findfirst(d.!=0)
     kr = left_corner[1]
     kf = left_corner[2] + 10
@@ -54,7 +57,8 @@ end
 
 """
 
-"""function slit2cam(d::AbstractArray{T,3}, pos::AbstractVector{T}) where {T<:AbstractFloat}
+"""
+function slit2cam(d::AbstractArray{T,3}, pos::AbstractVector{T}) where {T<:AbstractFloat}
     @assert length(pos) ==size(d)[3]
     ρinit = similar(pos)
     n = size(d)[2]

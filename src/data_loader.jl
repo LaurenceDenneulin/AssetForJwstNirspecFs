@@ -68,7 +68,8 @@ end
     -'rho' is the spatial position cube (in pixel);
     -'cent_init' is the initial position of the object in the slit (in pixel).
     
-"""function load_data(filename_beg::AbstractString, 
+"""
+function load_data(filename_beg::AbstractString, 
                    filename_end::AbstractString, 
                    nfiles::Integer; 
                    order::Integer=2,
