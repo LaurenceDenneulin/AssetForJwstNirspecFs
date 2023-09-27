@@ -9,6 +9,7 @@ export
 using InterpolationKernels
 using InverseProblem
 using DelimitedFiles
+using EasyFITS
 using Statistics
 using LinearAlgebra
 using PointSpreadFunctions
