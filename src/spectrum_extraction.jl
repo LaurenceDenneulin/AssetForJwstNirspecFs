@@ -18,7 +18,7 @@ function extract_spectrum(filename_beg::AbstractString,
                              hpb::AbstractFloat=0.,
                              sky_sub=true, 
                              order::Integer=3,
-                             max_iter = 10,
+                             max_iter = 2,
                              psf_params_bnds=[(0.0, 0.1);(0., 1.)],
                              center_bnds=1.)
 

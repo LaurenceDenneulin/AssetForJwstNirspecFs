@@ -19,7 +19,7 @@ function geometric_calibration(d, bpm, pos; order=2)
     for k=1:n
         rho[:,k] .-= rho_shift[k]
     end 
-
+    writedlm("rho_$pos.txt", rho_shift)
     return rho, rho_shift
 end
 
