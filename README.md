@@ -1,5 +1,5 @@
 # AssetForJwstNirspecFs 
-AssetForJwstNirspecFs is a Julia package to extract spectrum from JWST/NIRSpec Fixed Slit data. 
+**AssetForJwstNirspecFs** is a Julia package to extract spectrum from JWST/NIRSpec Fixed Slit data. 
 
 
 ## Installation
