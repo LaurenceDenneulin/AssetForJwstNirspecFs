@@ -1,9 +1,7 @@
-
-
 """
 
 """
-function geometric_calibration(d, bpm, pos; order=2)
+function geometric_calibration(d, bpm, pos; order=2,save=false)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
     if order == 0
@@ -19,24 +17,10 @@ function geometric_calibration(d, bpm, pos; order=2)
     for k=1:n
         rho[:,k] .-= rho_shift[k]
     end 
-    writedlm("rho_$pos.txt", rho_shift)
-    return rho, rho_shift
-end
-
-
-"""
-
-"""
-function extract_λ_val(ρ_map, λ_map, ρ0)
-    @assert size(ρ_map)==size(λ_map)
-    m,n=size(ρ_map)
-    λ = zeros(n)
-    for k=1:n
-        ρrange=range(minimum(ρ_map[:,k]); length=m, stop=maximum(ρ_map[:,k]))
-        Iλ = SparseInterpolator(ker, [ρ0], ρrange)
-        λ[k] = (Iλ*λ_map[:,k])[1]   
+    if save
+        writedlm("save/rho_$pos.txt", rho_shift)
     end
-    return λ
+    return rho, rho_shift
 end
 
 

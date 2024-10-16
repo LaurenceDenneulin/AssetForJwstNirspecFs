@@ -7,18 +7,14 @@ export
     geometric_calibration
 
 using ASSET
-using InterpolationKernels
-using InverseProblem
 using DelimitedFiles
 using EasyFITS
-using Statistics
-using LinearAlgebra
-using PointSpreadFunctions
-using LazyAlgebra
+using InterpolationKernels
+using InverseProblem
 using LinearInterpolators
-using OptimPackNextGen
-import OptimPackNextGen.Powell.Bobyqa
-import OptimPackNextGen.Brent
+using PointSpreadFunctions
+using PRIMA
+using Statistics
 
 
 include("data_loader.jl")

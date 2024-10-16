@@ -1,7 +1,7 @@
        
 function cost_psf(x::AbstractArray{T,1},w::AbstractArray{T,1}, σ::T,  ρ::T) where {T<:AbstractFloat}
     @assert size(x) == size(w)
-    norm = maximum(x[(round(Int64,ρ)-5):(round(Int64,ρ)+5)])
+    norm = maximum(x[max(round(Int64,ρ)-5,1):min(round(Int64,ρ)+5,length(x))])
     h=GaussianPSF(σ)
     f=zero(T)
     for k=1:length(x)
@@ -14,13 +14,12 @@ end
 
 function estimate_psf_parameters(d, w, pos)
    m,n = size(d)
-    σinit = 1.
+    σinit = 1.5
     ρinit, kf, kl=slit2cam(d, pos)
     psf_param=zeros(2 ,n)
     par=[σinit, ρinit]
-    for k=kf+10:kl-30   
-         par = Bobyqa.minimize!(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, [1e-8,par[2]-1.5], [3.5, par[2]+1.5],1, 1e-8)[2]
-        psf_param[:,k] .=copy(par)
+    for k=kf+10:kl-30
+        psf_param[:,k] .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, xl=[1e-8,par[2]-1.5], xu=[3.5, par[2]+1.5],rhobeg=1., rhoend=1e-8)[1]
     end
 return psf_param
 end

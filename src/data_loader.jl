@@ -1,5 +1,3 @@
-
-
 """
     data, wgt, bpm, lambda, pos =  load_data(filename)
     
@@ -16,46 +14,36 @@
     -'pos' is the position of the object in the slit (-1.5 being the top et 1.5 the bottom).
 
 """
-function load_data(filename::AbstractString)
-    clear_vect=[]
-    pos_vect=[]
-    FitsIO(filename, "r") do io
-       d = read(FitsImage,io;ext=2);
-       push!(pos_vect, d["SRCYPOS"]);
-       data = Float64.(convert(Array,d))
-       data[isnan.(data)] .= 0. 
-       push!(clear_vect, data)
-        for k=3:5
-           data = Float64.(read(FitsArray,io;ext=k));
-           data[isnan.(data)] .= 0. 
-           push!(clear_vect, data)
-        end
-    end
+function read_data(filename::AbstractString)
+    
+    hdr = read(FitsHeader,filename,ext=2)
+    pos_vect=hdr["SRCYPOS"].float
 
-    data=Float64.(clear_vect[1]'[:,:]);
-    m,n = size(data);
+    data=Float64.(readfits(filename,ext=2))'
+    data[isnan.(data)] .= 0.
+    dq=Float64.(readfits(filename,ext=3))'
+    dq[isnan.(dq)] .= 0.
+    err=Float64.(readfits(filename,ext=4))'
+    err[isnan.(err)] .= 0.
+    lambda=Float64.(readfits(filename,ext=5))'
+    lambda[isnan.(lambda)] .= 0.
 
-    bpm=Float64.(clear_vect[2]' .<=6);
-    bpm .*=  Float64.(data .> 0.)
-    err=Float64.(clear_vect[3]'[:,:]);
-    lambda=Float64.(clear_vect[4]'[:,:]);
-    wgt = bpm ./(err.^2) ;
-    wgt[isnan.(wgt)] .= 0.;
-    wgt[wgt .== Inf] .= 0.;
+    bpm = dq .<=6;
+    wgt = bpm ./(err.^2) 
+    wgt[isnan.(wgt)] .= 0.
+    wgt[wgt .== Inf] .= 0.
 
-return data, wgt, bpm, lambda, pos_vect[1]
+return data, wgt, bpm, lambda, pos_vect
 end
 
 
 """
 
-    data, wgt, lambda, rho, cent_init =  load_data(filename_beg, filename_end, nfiles;...)
+    data, wgt, lambda, ρ, cent_init =  load_data(dir;...)
     
     where the inputs:
 
-    -'filename_beg' is the first part of the String before the integration number;
-    -'filename_end' is the last part of the String after the integration number;
-    -'nfiles' is the amount of integrations,
+    -'dir' is the path to the directory where the '_cal' data are stored (one directory per filter).
     
     the optional inputs:
     -'order' is the order of the polynomial fitting for the geometrical_calibration;
@@ -65,31 +53,32 @@ end
     -'data' is a data cube;
     -'wgt' is the weights cube;
     -'lambda' is the wavlengths cube;
-    -'rho' is the spatial position cube (in pixel);
+    -'ρ' is the spatial position cube (in pixel);
     -'cent_init' is the initial position of the object in the slit (in pixel).
     
 """
-function load_data(filename_beg::AbstractString, 
-                   filename_end::AbstractString, 
-                   nfiles::Integer; 
+function load_data(dir::AbstractString;
                    order::Integer=2,
-                   sky_sub=false)
-    d = load_data(filename_beg*"1"*filename_end)[1];
+                   sky_sub=false,
+                   save=false)
+    filenames=readdir(dir)     
+    nfiles=length(filenames)          
+    d = read_data(dir*filenames[1])[1];
     m,n = size(d)
     data=zeros(m,n,nfiles)
     wgt=zeros(m,n,nfiles)
     bpm_map=zeros(m,n,nfiles)
     lambda=zeros(m,n,nfiles)
-    rho=zeros(m,n,nfiles)
+    ρ=zeros(m,n,nfiles)
     pos=zeros(nfiles)
     for i=1:nfiles
-         d, w, bpm, λ, p = load_data(filename_beg*"$i"*filename_end)
+         d, w, bpm, λ, p = read_data(dir*filenames[i])
          data[:,:,i] .=d
          wgt[:,:,i] .= w 
          bpm_map[:,:,i] .=bpm 
          lambda[:,:,i] .= λ 
          pos[i] = p       
-         rho[:,:,i] .= geometric_calibration(data[:,:,i], bpm_map[:,:,i], pos[i]; order=order)[1]
+         ρ[:,:,i] .= geometric_calibration(data[:,:,i], bpm_map[:,:,i], pos[i]; order=order, save=save)[1]
     end
     
     if sky_sub
@@ -107,6 +96,20 @@ function load_data(filename_beg::AbstractString,
     wgt[isnan.(wgt)] .= 0.;
     wgt[wgt .== Inf] .= 0.;
     cent_init=slit2cam(data, pos)
-    return data, wgt, lambda, rho, cent_init 
+    
+    if save
+       
+        numpos=findfirst("_nrs",filenames[1])[1]-1
+        extpos=findfirst(".",filenames[1])[1]
+        filename_beg=filenames[1][1:numpos-1]
+        filename_end=filenames[1][numpos+1:extpos-1]
+        
+        writefits!("save/"*filename_beg*"d"*filename_end*".fits",["TYPE" => "data"], data);
+        writefits!("save/"*filename_beg*"w"*filename_end*".fits",["TYPE" => "weights"],wgt);
+        writefits!("save/"*filename_beg*"l"*filename_end*".fits",["TYPE" => "wavelength"], lambda);
+        writefits!("save/"*filename_beg*"x"*filename_end*".fits",["TYPE" => "spatial position"],ρ);
+    end
+
+    return data, wgt, lambda, ρ, cent_init 
 end
 

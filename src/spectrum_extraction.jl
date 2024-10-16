@@ -1,18 +1,13 @@
-
-
 """
     z=extract_spectrum()
     
     performs the spectral extraction from inegrations files. 
     
-    -'filename_beg' is the first part of the String before the integration number;
-    -'filename_end' is the last part of the String after the integration number;
-    -'nfiles' is the amount of integrations,
+    -'dir' is the path to the directory where the '_cal' data are stored (one directory per filter).
+  
     -'hpz' is the hyperparameter for the spectrum regularization
 """
-function extract_spectrum(filename_beg::AbstractString,
-                             filename_end::AbstractString, 
-                             nfiles::Integer, 
+function extract_spectrum(dir::AbstractString,
                              hpz::AbstractFloat;
                              ker = CatmullRomSpline(Float64, Flat), 
                              hpb::AbstractFloat=0.,
@@ -20,9 +15,14 @@ function extract_spectrum(filename_beg::AbstractString,
                              order::Integer=3,
                              max_iter = 2,
                              psf_params_bnds=[(0.0, 0.1);(0., 1.)],
-                             center_bnds=1.)
+                             center_bnds=1.,
+                             save=false)
 
-    data, wgt, lambda, ρ, cent = load_data(filename_beg,filename_end, nfiles; order=order, sky_sub=sky_sub)
+    if save
+        mkpath("save")
+    end
+    
+    data, wgt, lambda, ρ, cent = load_data(dir; order=order, sky_sub=sky_sub, save=save)
     
     Rz=hpz*tikhonov()
     Rb=hpb*tikhonov()
@@ -53,5 +53,13 @@ function extract_spectrum(filename_beg::AbstractString,
 
        z,hf,cf =ASSET.extract_spectrum!(z, F, centinit, h, D ,Rz,b; extract_kwds=(psf_params_bnds=psf_params_bnds, psf_center_bnds=psf_center_bnds),max_iter=max_iter)
 
+    if save
+        filenames=readdir(dir)
+        numpos=findfirst("_nrs",filenames[1])[1]-1
+        extpos=findfirst(".",filenames[1])[1]
+        filename_beg=filenames[1][1:numpos-1]
+        filename_end=filenames[1][numpos+1:extpos-1]   
+        writedlm("save/"*filename_beg*"X"*filename_end[1:end-5]*"spectrum_hp=$hpz"*".txt", [λz z])
+    end
     return λz,z
 end 
