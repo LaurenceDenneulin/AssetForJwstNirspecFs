@@ -19,7 +19,9 @@ function estimate_psf_parameters(d, w, pos)
     psf_param=zeros(2 ,n)
     par=[σinit, ρinit]
     for k=kf+10:kl-30
-        psf_param[:,k] .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, xl=[1e-8,par[2]-1.5], xu=[3.5, par[2]+1.5],rhobeg=1., rhoend=1e-8)[1]
+        par[1]=σinit
+        par .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, rhobeg=1., rhoend=1e-8)[1]
+        psf_param[:,k] .= par
     end
 return psf_param
 end

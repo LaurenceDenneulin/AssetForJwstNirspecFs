@@ -61,7 +61,12 @@ function load_data(dir::AbstractString;
                    order::Integer=2,
                    sky_sub=false,
                    save=false)
-    filenames=readdir(dir)     
+                   
+    if save
+       mkpath("save/")
+    end               
+    filenames=readdir(dir)
+    filenames=filenames[contains.(filenames,"_cal")]     
     nfiles=length(filenames)          
     d = read_data(dir*filenames[1])[1];
     m,n = size(d)

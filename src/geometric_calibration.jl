@@ -11,15 +11,16 @@ function geometric_calibration(d, bpm, pos; order=2,save=false)
         rho_shift = zeros(n)
         fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order)
     end
+    if save
+        writedlm("save/fwhm_$pos.txt", psf_param[1,:])
+        writedlm("save/rho_$pos.txt", [psf_param[2,:] rho_shift])
+    end
     rho_shift .-=maximum(rho_shift);
     
     rho= Float64.(repeat(1:m, outer=(1,n)));      
     for k=1:n
         rho[:,k] .-= rho_shift[k]
     end 
-    if save
-        writedlm("save/rho_$pos.txt", rho_shift)
-    end
     return rho, rho_shift
 end
 
@@ -36,7 +37,7 @@ function slit2cam(d::AbstractArray{T,2}, pos::T) where {T<:AbstractFloat}
     kl=findlast(d[kr,:] .!=0.) - 10
     ue=findlast(d[:,kf] .!=0.)
     kf=findfirst(d[kr,:] .!=0.) + 10
-    return ((-pos .+0.5)*(ue-le-1) .+le .+1), kf,kl
+    return ((-pos .+0.5)*(ue-le-1) .+le), kf,kl
 end
 
 """
