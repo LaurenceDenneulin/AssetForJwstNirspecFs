@@ -4,13 +4,11 @@
 function geometric_calibration(d, bpm, pos; order=2,save=false)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
-    if order == 0
-        x=[median(psf_param[2,:])]
-    else        
+      
         valid= Float64.(psf_param[2,:] .!=0)
         rho_shift = zeros(n)
-        fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order)
-    end
+        robust_fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order)
+
     if save
         writedlm("save/fwhm_$pos.txt", psf_param[1,:])
         writedlm("save/rho_$pos.txt", [psf_param[2,:] rho_shift])

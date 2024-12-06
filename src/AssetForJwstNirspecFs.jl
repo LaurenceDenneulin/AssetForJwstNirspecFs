@@ -4,7 +4,12 @@ module AssetForJwstNirspecFs
 export 
     extract_spectrum, 
     load_data, 
-    geometric_calibration
+    geometric_calibration,
+    cost_psf,
+    estimate_psf_parameters,
+    fit_polynomial!,
+    robust_fit_polynomial!,
+    slit2cam
 
 using ASSET
 using DelimitedFiles

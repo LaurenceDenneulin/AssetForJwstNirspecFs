@@ -18,10 +18,12 @@ function estimate_psf_parameters(d, w, pos)
     ρinit, kf, kl=slit2cam(d, pos)
     psf_param=zeros(2 ,n)
     par=[σinit, ρinit]
-    for k=kf+10:kl-30
-        par[1]=σinit
-        par .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, rhobeg=1., rhoend=1e-8)[1]
-        psf_param[:,k] .= par
+    for k=1:n
+        if sum(d[:,k]) !=0
+            par.=[σinit, ρinit]
+            par .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, rhobeg=1., rhoend=1e-8)[1]
+            psf_param[:,k] .= par
+        end
     end
 return psf_param
 end
@@ -46,8 +48,29 @@ function fit_polynomial!(d, w, fit, x; order=2)
     return coef
 end
 
-
 function fit_polynomial!(d, w, fit; order=2)
    n=length(d)
    return fit_polynomial!(d, w, fit, collect(1:n); order=order)
 end
+
+
+function robust_fit_polynomial!(d, w, fit, x; order=2, tol=1e-6, threshold=1.5)
+    fit_temp=copy(fit)
+    test_tol=1.
+    coef=zeros(order+1);
+    while test_tol>tol
+        fill!(fit,0.)
+        coef.= fit_polynomial!(d, w, fit, x; order=order)   
+        Χ²=(d - fit).^2
+        w = w .*( Χ².<threshold)
+        test_tol=sum(abs.(fit - fit_temp))
+        fit_temp .=copy(fit)
+    end        
+    return coef
+end
+
+function robust_fit_polynomial!(d, w, fit; order=2, threshold=1.5)
+   n=length(d)
+   return robust_fit_polynomial!(d, w, fit, collect(1:n); order=order, threshold=threshold)
+end
+

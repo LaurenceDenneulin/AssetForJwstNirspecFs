@@ -83,7 +83,7 @@ function load_data(dir::AbstractString;
          bpm_map[:,:,i] .=bpm 
          lambda[:,:,i] .= λ 
          pos[i] = p       
-         ρ[:,:,i] .= geometric_calibration(data[:,:,i], bpm_map[:,:,i], pos[i]; order=order, save=save)[1]
+         ρ[:,:,i] .= geometric_calibration(data[:,:,i], w.*bpm_map[:,:,i], pos[i]; order=order, save=save)[1]
     end
     
     if sky_sub
