@@ -35,7 +35,7 @@ function slit2cam(d::AbstractArray{T,2}, pos::T) where {T<:AbstractFloat}
     kl=findlast(d[kr,:] .!=0.) - 10
     ue=findlast(d[:,kf] .!=0.)
     kf=findfirst(d[kr,:] .!=0.) + 10
-    return ((-pos .+0.5)*(ue-le-1) .+le), kf,kl
+    return ((-pos .+0.55)*(ue-le-1) .+le), kf,kl
 end
 
 """
