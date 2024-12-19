@@ -1,13 +1,13 @@
 """
 
 """
-function geometric_calibration(d, bpm, pos; order=2,save=false)
+function geometric_calibration(d, bpm, pos; order=2,threshold=1.5, save=false)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
       
         valid= Float64.(psf_param[2,:] .!=0)
         rho_shift = zeros(n)
-        robust_fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order)
+        robust_fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order, threshold=threshold)
 
     if save
         writedlm("save/fwhm_$pos.txt", psf_param[1,:])
@@ -35,7 +35,7 @@ function slit2cam(d::AbstractArray{T,2}, pos::T) where {T<:AbstractFloat}
     kl=findlast(d[kr,:] .!=0.) - 10
     ue=findlast(d[:,kf] .!=0.)
     kf=findfirst(d[kr,:] .!=0.) + 10
-    return ((-pos .+0.55)*(ue-le-1) .+le), kf,kl
+    return ((-pos .+0.55)*(ue-le-1)./1.1 .+le), kf,kl
 end
 
 """

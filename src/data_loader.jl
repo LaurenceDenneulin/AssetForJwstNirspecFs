@@ -15,10 +15,8 @@
 
 """
 function read_data(filename::AbstractString)
-    
-    hdr = read(FitsHeader,filename,ext=2)
-    pos_vect=hdr["SRCYPOS"].float
-
+    hdr2 = read(FitsHeader,filename,ext=2)
+    pos_vect=hdr2["SRCYPOS"].float
     data=Float64.(readfits(filename,ext=2))'
     data[isnan.(data)] .= 0.
     dq=Float64.(readfits(filename,ext=3))'
@@ -58,7 +56,9 @@ end
     
 """
 function load_data(dir::AbstractString;
+                   filter::Union{UndefInitializer,String}=undef,
                    order::Integer=2,
+                   threshold::AbstractFloat=1.5,
                    sky_sub=false,
                    save=false)
                    
@@ -68,24 +68,68 @@ function load_data(dir::AbstractString;
     filenames=readdir(dir)
     filenames=filenames[contains.(filenames,"_cal")]     
     nfiles=length(filenames)          
-    d = read_data(dir*filenames[1])[1];
-    m,n = size(d)
-    data=zeros(m,n,nfiles)
-    wgt=zeros(m,n,nfiles)
-    bpm_map=zeros(m,n,nfiles)
-    lambda=zeros(m,n,nfiles)
-    ρ=zeros(m,n,nfiles)
-    pos=zeros(nfiles)
+    #d = read_data(dir*filenames[1])[1];
+    #m,n = size(d)
+    #data=zeros(m,n,nfiles)
+    #wgt=zeros(m,n,nfiles)
+    #bpm_map=zeros(m,n,nfiles)
+    #lambda=zeros(m,n,nfiles)
+    #ρ=zeros(m,n,nfiles)
+    #pos=zeros(nfiles)
+    data_save=[]
+    wgt_save=[]
+    bpm_map_save=[]
+    lambda_save=[]
+    ρ_save=[]
+    pos_save=[]
     for i=1:nfiles
-         d, w, bpm, λ, p = read_data(dir*filenames[i])
+        if filter != undef
+            hdr1 = read(FitsHeader,dir*filenames[i],ext=1)
+            fltr=hdr1["GRATING"].string
+            display(fltr)
+            if filter == fltr
+                d, w, bpm, λ, p = read_data(dir*filenames[i])
+                push!(data_save,d)
+                push!(wgt_save,w)
+                push!(bpm_map_save,bpm)
+                push!(lambda_save,λ)
+                push!(pos_save,p)
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+            end
+         else
+            d, w, bpm, λ, p = read_data(dir*filenames[i])
+                push!(data_save,d)
+                push!(wgt_save,w)
+                push!(bpm_map_save,bpm)
+                push!(lambda_save,λ)
+                push!(pos_save,p)
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+         end
+         #=
          data[:,:,i] .=d
          wgt[:,:,i] .= w 
          bpm_map[:,:,i] .=bpm 
          lambda[:,:,i] .= λ 
          pos[i] = p       
          ρ[:,:,i] .= geometric_calibration(data[:,:,i], w.*bpm_map[:,:,i], pos[i]; order=order, save=save)[1]
+         =#      
     end
-    
+    nfiles = length(data_save)         
+    m,n = size(data_save[1])
+    data=zeros(m,n,nfiles)
+    wgt=zeros(m,n,nfiles)
+    bpm_map=zeros(m,n,nfiles)
+    lambda=zeros(m,n,nfiles)
+    ρ=zeros(m,n,nfiles)
+    pos=zeros(nfiles)
+    for k=1:nfiles
+        data[:,:,k]=data_save[k]
+        wgt[:,:,k]=wgt_save[k]
+        bpm_map[:,:,k]=bpm_map_save[k]
+        lambda[:,:,k]=lambda_save[k]
+        pos[k] = pos_save[k]       
+        ρ[:,:,k] = ρ_save[k]
+    end
     if sky_sub
         data_nobg = copy(data)
         wgt_nobg=copy(wgt)

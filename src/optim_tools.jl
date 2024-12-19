@@ -14,13 +14,13 @@ end
 
 function estimate_psf_parameters(d, w, pos)
    m,n = size(d)
-    σinit = 1.5
+    σinit = 1.25
     ρinit, kf, kl=slit2cam(d, pos)
     psf_param=zeros(2 ,n)
     par=[σinit, ρinit]
     for k=1:n
         if sum(d[:,k]) !=0
-            par.=[σinit, ρinit]
+            par .=[σinit, ρinit]
             par .= bobyqa(x->cost_psf(d[:,k], w[:,k], x[1], x[2]), par, rhobeg=1., rhoend=1e-8)[1]
             psf_param[:,k] .= par
         end
