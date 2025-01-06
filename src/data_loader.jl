@@ -55,7 +55,7 @@ end
     -'cent_init' is the initial position of the object in the slit (in pixel).
     
 """
-function load_data(dir::AbstractString;
+function load_data(;dir::Union{UndefInitializer,String}=undef,
                    filter::Union{UndefInitializer,String}=undef,
                    order::Integer=2,
                    threshold::AbstractFloat=1.5,
@@ -64,9 +64,14 @@ function load_data(dir::AbstractString;
                    
     if save
        mkpath("save/")
-    end               
-    filenames=readdir(dir)
-    filenames=filenames[contains.(filenames,"_cal")]     
+    end
+    if dir !=undef               
+        filenames=readdir(dir)
+    else 
+        filenames=readdir()
+        dir=""
+    end    
+    filenames=filenames[contains.(filenames,"nrs1_cal.fits")]     
     nfiles=length(filenames)          
     #d = read_data(dir*filenames[1])[1];
     #m,n = size(d)
