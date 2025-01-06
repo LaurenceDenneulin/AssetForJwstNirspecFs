@@ -1,25 +1,30 @@
 """
 
 """
-function geometric_calibration(d, bpm, pos; order=2,threshold=1.5, save=false)
+#=
+function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
+=#
+function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=false)
     m,n = size(d)    
-    psf_param=estimate_psf_parameters(d, bpm, pos)
-      
+    # psf_param=estimate_psf_parameters(d, bpm, pos)
+    psf_param=estimate_psf_parameters(d, w, lambda, pos)
         valid= Float64.(psf_param[2,:] .!=0)
-        rho_shift = zeros(n)
-        robust_fit_polynomial!(psf_param[2,:], valid, rho_shift; order=order, threshold=threshold)
-
+    valid[1:15] .= 0.
+    valid[end-15:end] .= 0.
+        psf_centers = zeros(n)
+        robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
+    
     if save
         writedlm("save/fwhm_$pos.txt", psf_param[1,:])
-        writedlm("save/rho_$pos.txt", [psf_param[2,:] rho_shift])
+        writedlm("save/rho_$pos.txt", [psf_param[2,:] psf_centers])
     end
-    rho_shift .-=maximum(rho_shift);
+    rho_shift = psf_centers .-maximum(psf_centers);
     
     rho= Float64.(repeat(1:m, outer=(1,n)));      
     for k=1:n
         rho[:,k] .-= rho_shift[k]
     end 
-    return rho, rho_shift
+    return rho, rho_shift, psf_centers
 end
 
 
