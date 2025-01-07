@@ -100,10 +100,10 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
                 push!(pos_save,p)
-                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
-                rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
-                push!(ρ_save, rho)
-                push!(psf_center_save, psf_center)
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
+                #push!(ρ_save, rho)
+                #push!(psf_center_save, psf_center)
             end
          else
             d, w, bpm, λ, p = read_data(dir*filenames[i])
@@ -112,10 +112,10 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
                 push!(pos_save,p)
-                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
-                rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
-                push!(ρ_save, rho)
-                push!(psf_center_save, psf_center)
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
+                #push!(ρ_save, rho)
+                #push!(psf_center_save, psf_center)
          end
          #=
          data[:,:,i] .=d
@@ -156,8 +156,8 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
     end
     wgt[isnan.(wgt)] .= 0.;
     wgt[wgt .== Inf] .= 0.;
-    # cent_init=slit2cam(data, pos)
-    cent_init = mean.(psf_center_save)
+     cent_init=slit2cam(data, pos)[1]
+    #cent_init = mean.(psf_center_save)
     
     if save
        

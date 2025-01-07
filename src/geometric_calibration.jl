@@ -1,13 +1,13 @@
 """
 
 """
-#=
+
 function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
-=#
-function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=false)
+
+#function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=false)
     m,n = size(d)    
-    # psf_param=estimate_psf_parameters(d, bpm, pos)
-    psf_param=estimate_psf_parameters(d, w, lambda, pos)
+    psf_param=estimate_psf_parameters(d, bpm, pos)
+    #psf_param=estimate_psf_parameters(d, w, pos)
         valid= Float64.(psf_param[2,:] .!=0)
     valid[1:15] .= 0.
     valid[end-15:end] .= 0.
