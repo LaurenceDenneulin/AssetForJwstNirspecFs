@@ -7,7 +7,7 @@ function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
 #function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=false)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
-    #psf_param=estimate_psf_parameters(d, w, pos)
+    #psf_param=estimate_psf_parameters(d, w, lambda, pos)
         valid= Float64.(psf_param[2,:] .!=0)
     valid[1:15] .= 0.
     valid[end-15:end] .= 0.
@@ -19,11 +19,21 @@ function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
         writedlm("save/rho_$pos.txt", [psf_param[2,:] psf_centers])
     end
     rho_shift = psf_centers .-maximum(psf_centers);
-    
+    #
     rho= Float64.(repeat(1:m, outer=(1,n)));      
     for k=1:n
         rho[:,k] .-= rho_shift[k]
     end 
+    #=
+    rho = zeros(m,n)
+    rho_rng = Float64.(1:m)
+    for i in axes(lambda,2)
+        l = psf_centers[i,p]
+        iso_lam = findmin(x -> abs.(x .- lambda[round(Int64,l),i,p]), lambda; dims=2)[2]
+        rho[iso_lam] = rho_rng .- rho_shift[i]
+    end
+    rho .*= (lambda .!=0.)
+    =#
     return rho, rho_shift, psf_centers
 end
 
