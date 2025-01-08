@@ -11,6 +11,7 @@ function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
         valid= Float64.(psf_param[2,:] .!=0)
     valid[1:15] .= 0.
     valid[end-15:end] .= 0.
+    psf_param[2,:] .= min.(m, psf_param[2,:])
         psf_centers = zeros(n)
         robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
     
