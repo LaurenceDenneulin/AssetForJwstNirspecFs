@@ -87,7 +87,7 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
     lambda_save=[]
     ρ_save=[]
     pos_save=[]
-    psf_center_save = []
+    # psf_center_save = []
     for i=1:nfiles
         if filter != undef
             hdr1 = read(FitsHeader,dir*filenames[i],ext=1)
@@ -100,7 +100,8 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
                 push!(pos_save,p)
-                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
                 #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
                 #push!(ρ_save, rho)
                 #push!(psf_center_save, psf_center)
@@ -112,7 +113,8 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
                 push!(pos_save,p)
-                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
                 #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
                 #push!(ρ_save, rho)
                 #push!(psf_center_save, psf_center)

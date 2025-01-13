@@ -1,9 +1,7 @@
        
 function cost_psf(x::AbstractArray{T,1},w::AbstractArray{T,1}, σ::T,  ρ::T) where {T<:AbstractFloat}
     @assert size(x) == size(w)
-    # norm = maximum(x[max(round(Int64,ρ)-5,1):min(round(Int64,ρ)+5,length(x))])
-    b = w .!= 0
-    norm = maximum(b .* x)
+    norm = maximum(x[max(round(Int64,ρ)-5,1):min(round(Int64,ρ)+5,length(x))])
     h=GaussianPSF(σ)
     f=zero(T)
     for k=1:length(x)
@@ -36,23 +34,24 @@ function estimate_psf_parameters(d::AbstractArray{T,2},
     lambda::AbstractArray{T,2}, 
     pos::T) where {T<:AbstractFloat}
 
+    bpm = (w .!= 0)
     psf_param=zeros(2, size(d,2))
-    cent_init = slit2cam(d, pos)#findmax(mean(w .* d, dims=2))[2]
-    prms_init = [0.75, cent_init[1]]
+    cent_init = slit2cam(d, pos)
+    lambda_cent = findmax(mean(bpm .* d, dims=2))[2]
+    # prms_init = [0.75, cent_init[1]]
     for i in axes(lambda,2)
         # select the lambda value at the initial center of the slit for each column
-        l = cent_init[1]
+        # l = cent_init[1]
+        l = lambda_cent[1]
         # iso-lambda indices
-        iso_lam = findmin(x -> abs.(x .- lambda[round(Int64,l),i]), lambda; dims=2)[2]
+        iso_lam = findmin(abs.(lambda .- lambda[l,i]); dims=2)[2]
         # data profile for the iso-lambda
-        #FIXME: is there a better way than allocating a new vector for each
-        #lambda? Maybe a view?
-        r_prof = [d[n[1],n[2]] for n in iso_lam][:]
+        r_prof = bpm[iso_lam] .* d[iso_lam]
         if sum(r_prof) != 0. # the profile contains a PSF slice
-            prms_init .=[0.75, min(prms_init[2],cent_init[1])]
-            w_prof = [w[n[1],n[2]] for n in iso_lam][:]
-            prms = bobyqa(x -> cost_psf(r_prof, w_prof, x[1], x[2]), 
-                          prms_init, rhobeg=1., rhoend=1e-8)[1]
+            prms_init = [0.75, findmax(r_prof)[2][1]]#min(prms_init[2],cent_init[1])]
+            w_prof = w[iso_lam]#[w[n[1],n[2]] for n in iso_lam][:]
+            prms = bobyqa(x -> cost_psf(r_prof[:], w_prof[:], x[1], x[2]), 
+                          prms_init, rhobeg=.75, rhoend=1e-8)[1]
             psf_param[:,i] = prms
         end
     end
