@@ -59,9 +59,10 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                    filter::Union{UndefInitializer,String}=undef,
                    order::Integer=2,
                    threshold::AbstractFloat=1.5,
+                   calib_type="columnwise",
                    sky_sub=false,
                    save=false)
-                   
+    @assert (calib_type == "columnwise") ||  (calib_type == "isolambda")             
     if save
        mkpath("save/")
     end
@@ -72,22 +73,13 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
         dir=""
     end    
     filenames=filenames[contains.(filenames,"nrs1_cal.fits")]     
-    nfiles=length(filenames)          
-    #d = read_data(dir*filenames[1])[1];
-    #m,n = size(d)
-    #data=zeros(m,n,nfiles)
-    #wgt=zeros(m,n,nfiles)
-    #bpm_map=zeros(m,n,nfiles)
-    #lambda=zeros(m,n,nfiles)
-    #ρ=zeros(m,n,nfiles)
-    #pos=zeros(nfiles)
+    nfiles=length(filenames)    
     data_save=[]
     wgt_save=[]
     bpm_map_save=[]
     lambda_save=[]
     ρ_save=[]
     pos_save=[]
-    # psf_center_save = []
     for i=1:nfiles
         if filter != undef
             hdr1 = read(FitsHeader,dir*filenames[i],ext=1)
@@ -100,33 +92,25 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
                 push!(pos_save,p)
-                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
-                push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
-                #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
-                #push!(ρ_save, rho)
-                #push!(psf_center_save, psf_center)
+                if calib_type == "columnwise"
+                    push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                elseif calib_type == "isolambda"
+                    push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
+                end
             end
          else
             d, w, bpm, λ, p = read_data(dir*filenames[i])
-                push!(data_save,d)
-                push!(wgt_save,w)
-                push!(bpm_map_save,bpm)
-                push!(lambda_save,λ)
-                push!(pos_save,p)
-                # push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+            push!(data_save,d)
+            push!(wgt_save,w)
+            push!(bpm_map_save,bpm)
+            push!(lambda_save,λ)
+            push!(pos_save,p)
+            if calib_type == "columnwise"
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+            elseif calib_type == "isolambda"
                 push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
-                #rho, rho_shift, psf_center = geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)
-                #push!(ρ_save, rho)
-                #push!(psf_center_save, psf_center)
-         end
-         #=
-         data[:,:,i] .=d
-         wgt[:,:,i] .= w 
-         bpm_map[:,:,i] .=bpm 
-         lambda[:,:,i] .= λ 
-         pos[i] = p       
-         ρ[:,:,i] .= geometric_calibration(data[:,:,i], w.*bpm_map[:,:,i], pos[i]; order=order, save=save)[1]
-         =#      
+            end
+        end     
     end
     nfiles = length(data_save)         
     m,n = size(data_save[1])

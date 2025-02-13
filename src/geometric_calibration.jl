@@ -11,11 +11,12 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
     valid[1:15] .= 0
     valid[end-15:end] .= 0
     psf_param[2,:] .= min.(m, psf_param[2,:])
+    psf_param[2,:] .= max.(1., psf_param[2,:])
     psf_centers = zeros(n)
-    # robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
-    coef = fit_polynomial_law((1,order), (1.0:n)[valid], psf_param[2,valid])
-    rho_pol = PolynLaw{1,Float64,order}(coef)
-    psf_centers = rho_pol.(1.0:n)
+    robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
+    #coef = fit_polynomial_law((1,order), (1.0:n)[valid], psf_param[2,valid])
+    #rho_pol = PolynLaw{1,Float64,order}(coef)
+    #psf_centers = rho_pol.(1.0:n)
 
     if save
         writedlm("save/fwhm_$pos.txt", psf_param[1,:])
@@ -42,11 +43,38 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
     # fill the empty pixels that are between iso-lams (this is NOT the way...)
     empty_pix = findall((id_pix .== 0.) .* mask)
     for p in empty_pix
-        rho[p] = (rho[p[1]-1,p[2]] + rho[p[1]+1,p[2]])/2
+        if p[1] > 1
+            rho[p] = (rho[p[1]-1,p[2]] + rho[p[1]+1,p[2]])/2
+        else
+            rho[p] = rho[p[1]+1,p[2]]
+        end
     end
     #
     return rho, rho_shift, psf_centers
 end
+
+
+function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
+    m,n = size(d)    
+    psf_param=estimate_psf_parameters(d, bpm, pos)
+      
+    valid= Float64.(psf_param[2,:] .!=0)
+    psf_centers = zeros(n)
+    robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
+    
+    if save
+        writedlm("save/fwhm_$pos.txt", psf_param[1,:])
+        writedlm("save/rho_$pos.txt", [psf_param[2,:] psf_centers])
+    end
+    rho_shift = psf_centers .-maximum(psf_centers);
+
+    rho= Float64.(repeat(1:m, outer=(1,n)));      
+    for k=1:n
+        rho[:,k] .-= rho_shift[k]
+    end 
+    return rho, rho_shift, psf_centers
+end
+
 
 
 """
