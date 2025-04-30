@@ -22,12 +22,13 @@ function read_data(filename::AbstractString)
     dq=Float64.(readfits(filename,ext=3))'
     dq[isnan.(dq)] .= 0.
     err=Float64.(readfits(filename,ext=6))' + Float64.(readfits(filename,ext=7))'
+    #err=Float64.(readfits(filename,ext=4))' 
     err[isnan.(err)] .= 0.
     lambda=Float64.(readfits(filename,ext=5))'
     lambda[isnan.(lambda)] .= 0.
 
     bpm = dq .<=6;
-    wgt = bpm ./(err) 
+    wgt = bpm ./(err)
     wgt[isnan.(wgt)] .= 0.
     wgt[wgt .== Inf] .= 0.
 

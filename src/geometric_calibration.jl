@@ -7,7 +7,7 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
     m,n = size(d)    
     # psf_param=estimate_psf_parameters(d, bpm, pos)
     psf_param=estimate_psf_parameters(d, w, lambda, pos)
-    valid= (psf_param[2,:] .!=0)
+    valid= (psf_param[2,:] .>0)
     valid[1:15] .= 0
     valid[end-15:end] .= 0
     psf_param[2,:] .= min.(m, psf_param[2,:])
@@ -22,6 +22,7 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
         writedlm("save/fwhm_$pos.txt", psf_param[1,:])
         writedlm("save/rho_$pos.txt", [psf_param[2,:] psf_centers])
     end
+    display(maximum(psf_centers))
     rho_shift = psf_centers .-maximum(psf_centers);
     #=
     rho= Float64.(repeat(1:m, outer=(1,n)));      
@@ -58,7 +59,9 @@ function geometric_calibration(d, bpm, pos; order=3,threshold=1.5, save=false)
     m,n = size(d)    
     psf_param=estimate_psf_parameters(d, bpm, pos)
       
-    valid= Float64.(psf_param[2,:] .!=0)
+    valid= Float64.(psf_param[2,:] .>0)
+    psf_param[2,:] .= min.(m, psf_param[2,:])
+    #psf_param[2,:] .= max.(0., psf_param[2,:])
     psf_centers = zeros(n)
     robust_fit_polynomial!(psf_param[2,:], valid, psf_centers; order=order, threshold=threshold)
     
