@@ -29,9 +29,11 @@ function read_data(filename::AbstractString)
 
     bpm = dq .<=6;
     wgt = bpm ./(err)
+    #wgt = bpm ./(err.^2)
     wgt[isnan.(wgt)] .= 0.
     wgt[wgt .== Inf] .= 0.
-
+    wgt[data .< 0] .=0.
+    data[data .< 0] .=0.
 return data, wgt, bpm, lambda, pos_vect
 end
 
@@ -80,7 +82,7 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
     bpm_map_save=[]
     lambda_save=[]
     ρ_save=[]
-    pos_save=[]
+    #pos_save=[]
     for i=1:nfiles
         if filter != undef
             hdr1 = read(FitsHeader,dir*filenames[i],ext=1)
@@ -92,11 +94,11 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
                 push!(wgt_save,w)
                 push!(bpm_map_save,bpm)
                 push!(lambda_save,λ)
-                push!(pos_save,p)
+                #push!(pos_save,p)
                 if calib_type == "columnwise"
-                    push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                    push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold))
                 elseif calib_type == "isolambda"
-                    push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
+                    push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold))
                 end
             end
          else
@@ -105,11 +107,11 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
             push!(wgt_save,w)
             push!(bpm_map_save,bpm)
             push!(lambda_save,λ)
-            push!(pos_save,p)
+            #push!(pos_save,p)
             if calib_type == "columnwise"
-                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold)[1])
+                push!(ρ_save,geometric_calibration(d, Float64.(bpm), p; order=order, save=save, threshold=threshold))
             elseif calib_type == "isolambda"
-                push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold)[1])
+                push!(ρ_save,geometric_calibration(d, w, λ, p; order=order, save=save, threshold=threshold))
             end
         end     
     end
@@ -120,14 +122,14 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
     bpm_map=zeros(m,n,nfiles)
     lambda=zeros(m,n,nfiles)
     ρ=zeros(m,n,nfiles)
-    pos=zeros(nfiles)
+    #pos=zeros(nfiles)
     for k=1:nfiles
-        data[:,:,k]=data_save[k]
-        wgt[:,:,k]=wgt_save[k]
-        bpm_map[:,:,k]=bpm_map_save[k]
-        lambda[:,:,k]=lambda_save[k]
-        pos[k] = pos_save[k]       
-        ρ[:,:,k] = ρ_save[k]
+        data[:,:,k].=data_save[k]
+        wgt[:,:,k].=wgt_save[k]
+        bpm_map[:,:,k].=bpm_map_save[k]
+        lambda[:,:,k].=lambda_save[k]
+        #pos[k] .= pos_save[k]
+        ρ[:,:,k] .= ρ_save[k]
     end
     if sky_sub
         data_nobg = copy(data)
@@ -143,7 +145,7 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
     end
     wgt[isnan.(wgt)] .= 0.;
     wgt[wgt .== Inf] .= 0.;
-     cent_init=slit2cam(data, pos)[1]
+    # cent_init=slit2cam(data, pos)[1]
     #cent_init = mean.(psf_center_save)
     
     if save
@@ -159,6 +161,6 @@ function load_data(;dir::Union{UndefInitializer,String}=undef,
         writefits!("save/"*filename_beg*"x"*filename_end*".fits",["TYPE" => "spatial position"],ρ);
     end
 
-    return data, wgt, lambda, ρ, cent_init 
+    return data, wgt, lambda, ρ#, cent_init 
 end
 

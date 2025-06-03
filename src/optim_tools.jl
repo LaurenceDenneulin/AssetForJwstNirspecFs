@@ -21,8 +21,10 @@ function estimate_psf_parameters(d, w, pos)
     par=[σinit, ρinit]
     for k=1:n
         if sum(d[:,k]) !=0
-            if (median(psf_param[2,k-10:k-1])>0) && (abs(par[2] - median(psf_param[2,k-10:k-1])) > 1)
+            if (median(psf_param[2,k-5:k-1])>0) && (abs(par[2] - median(psf_param[2,k-5:k-1])) > 1)
             par.=[σinit, median(psf_param[2,k-10:k-1])]
+            elseif (par[2] < 1)
+            par.=[σinit,  ρinit] 
             else
             par.=[σinit, par[2]]
             end
