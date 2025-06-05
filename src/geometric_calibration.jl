@@ -23,7 +23,7 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
         writedlm("save/rho_$pos.txt", [psf_param[2,:] psf_centers])
     end
     display(maximum(psf_centers))
-    rho_shift = psf_centers .-maximum(psf_centers);
+    rho_shift = psf_centers;# .-maximum(psf_centers);
     #=
     rho= Float64.(repeat(1:m, outer=(1,n)));      
     for k=1:n
@@ -51,7 +51,7 @@ function geometric_calibration(d, w, lambda, pos; order=3,threshold=1.5, save=fa
         end
     end
     #
-    return rho, rho_shift#, psf_centers
+    return rho#, rho_shift#, psf_centers
 end
 
 
