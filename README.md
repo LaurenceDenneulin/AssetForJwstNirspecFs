@@ -1,7 +1,7 @@
 # AssetForJwstNirspecFs 
 **AssetForJwstNirspecFs** is a Julia package to extract spectrum from JWST/NIRSpec Fixed Slit data. 
 
-This package is a top layer of the more general package [`ASSET`], specifficaly for the JWST/NIRSpec Fixed Slit data. It contains calibration methods to obtain the spatial distribution maps required in [`ASSET`]. 
+This package is a wraper of the more general package [`ASSET`], specifficaly for the JWST/NIRSpec Fixed Slit data. It contains calibration methods to obtain the spatial distribution maps required in [`ASSET`]. 
 
  [`ASSET`] should be installed prior to the installation of `AssetForJwstNirspecFs`. See the documentation of [`ASSET`] for its installation.
 
